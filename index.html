@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <!-- Mobilanpassning & iOS Web App Capable -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Lönekalkyl">
+  
+  <!-- Importera en lyxig, geometrisk sans-serif för Apple/storbankskänsla -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <title>Lönekalkylator</title>
+  
+  <style>
+    /* CSS VARIABLER (LYXIGT MÖRKT DESIGNTEMA - APPLE / STORBANK) */
+    :root {
+      --bg: #000000; /* Kolsvart OLED för maximal lyxig kontrast */
+      --card-bg: rgba(20, 20, 25, 0.7); /* Sotigt lyxigt mörkt glas */
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: #94a3b8; /* Slate grå */
+      --accent-green: #10b981; /* Smaragdgrön för pengar & OB */
+      --accent-gold: #e2b857;  /* Champagneguld för Övertid */
+      --accent-blue: #3b82f6;  /* Apple Safari Blue */
+      --safe-area-top: env(safe-area-inset-top, 20px);
+      --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* TYPOGRAFI & SYSTEMÅTERSTÄLLNING */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      display: flex;
+      flex-direction: column;
+      padding-top: var(--safe-area-top);
+      padding-bottom: var(--safe-area-bottom);
+    }
+
+    html {
+      height: -webkit-fill-available;
+      background-color: #000000;
+    }
+
+    /* CONTAINER */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      position: relative;
+    }
+
+    /* LYXIG MINIMALISTISK DESIGN PÅ HEADER */
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+      padding-top: 10px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      /* Elegant vit-silver-guld metallic gradient */
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 6px;
+    }
+
+    /* GLOWING GLASSMORPHISM-KORT (APPLE DESIGN) */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px; /* Mjukt Apple-rundat */
+      padding: 26px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      margin-bottom: 22px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    /* Smarta subtila neon-sken runt korten */
+    #ob-input-card, #ob-result {
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(16, 185, 129, 0.03);
+    }
+    
+    #ot-input-card, #ot-result {
+      border: 1px solid rgba(226, 184, 87, 0.15);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(226, 184, 87, 0.03);
+    }
+
+    /* FORMULÄRELEMENT */
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    /* Apple-fält med mjukt rundade hörn */
+    input[type="number"],
+    input[type="datetime-local"] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s ease;
+      -webkit-appearance: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    input[type="number"] {
+      padding-right: 50px;
+    }
+
+    input:focus {
+      border-color: var(--accent-gold);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 15px rgba(226, 184, 87, 0.15);
+    }
+
+    input[type="datetime-local"]:focus {
+      border-color: var(--accent-green);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+
+    /* PREMIUM TOUCHKNAPPAR (PILL-SHAPE) */
+    button {
+      width: 100%;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 18px; /* Elegant storlek */
+      padding: 18px 24px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    /* HUVUDKNAPPAR (LANDNINGSSKÄRM - CAPSULES) */
+    .menu-button {
+      margin-bottom: 16px;
+      text-align: left;
+      justify-content: space-between;
+      height: 100px;
+      padding: 22px 26px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-button::after {
+      content: '→';
+      font-size: 22px;
+      font-weight: 300;
+      opacity: 0.6;
+      transition: transform 0.2s ease;
+    }
+
+    .menu-button:active::after {
+      transform: translateX(4px);
+    }
+
+    .menu-button-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .menu-button-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .menu-button-desc {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.6;
+    }
+
+    /* OB Knapp (Vibrant Emerald) */
+    .btn-ob {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(16, 185, 129, 0.08) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.18);
+      color: var(--accent-green);
+    }
+
+    /* Övertid Knapp (Champagne Gold) */
+    .btn-ot {
+      background: linear-gradient(135deg, rgba(226, 184, 87, 0.03) 0%, rgba(226, 184, 87, 0.08) 100%);
+      border: 1px solid rgba(226, 184, 87, 0.18);
+      color: var(--accent-gold);
+    }
+
+    /* RÄKNA UT KNAPPAR */
+    .btn-action {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+      margin-top: 10px;
+    }
+
+    .btn-action-ot {
+      background: linear-gradient(135deg, #e2b857 0%, #c5a059 100%);
+      color: #000000;
+      box-shadow: 0 8px 25px rgba(226, 184, 87, 0.3);
+    }
+
+    /* Tillbakaknapp (Apple Minimalist) */
+    .btn-back {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      padding: 10px 18px;
+      font-size: 14px;
+      border-radius: 12px;
+      width: auto;
+      align-self: flex-start;
+      margin-bottom: 20px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-back:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* VY SEKTIONER */
+    .view {
+      display: none;
+      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      flex-direction: column;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* PRESETS CAPSULES */
+    .presets-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 20px; /* Pill form */
+      white-space: nowrap;
+      width: auto;
+      transition: all 0.2s ease;
+    }
+    .preset-btn:active {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* RESULTAT-DISPLAY (LYXIG KASINOJACKPOT / STORBANK) */
+    .result-display {
+      display: none;
+      margin-top: 24px;
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-header {
+      text-align: center;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 20px;
+    }
+
+    .result-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* Det maffiga, glödande kasinovinst-beloppet! */
+    .result-value {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--accent-gold);
+      text-shadow: 0 0 25px rgba(226, 184, 87, 0.3);
+      margin: 8px 0;
+      letter-spacing: -1px;
+    }
+
+    #ob-result .result-value {
+      color: var(--accent-green);
+      text-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .result-subvalue {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 6px;
+    }
+    
+    #ob-result .result-subvalue {
+      color: var(--accent-green);
+    }
+
+    /* SPECIFIKATIONSLISTA */
+    .breakdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .breakdown-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .breakdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .breakdown-name {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .breakdown-details {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .breakdown-sum {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    /* LYXIGA RESET-KNAPPAR */
+    .btn-reset-ob {
+      border: 1px solid var(--accent-green) !important;
+      color: var(--accent-green) !important;
+      background: rgba(16, 185, 129, 0.05) !important;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15) !important;
+      border-radius: 16px !important;
+    }
+    
+    .btn-reset-ot {
+      border: 1px solid var(--accent-gold) !important;
+      color: var(--accent-gold) !important;
+      background: rgba(226, 184, 87, 0.05) !important;
+      box-shadow: 0 4px 15px rgba(226, 184, 87, 0.15) !important;
+      border-radius: 16px !important;
+    }
+
+    /* JACKPOT CONFETTI */
+    #cash-rain-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-60px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(105vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes sway {
+      0%, 100% {
+        transform: translateX(-30px);
+      }
+      50% {
+        transform: translateX(30px);
+      }
+    }
+
+    .cash-item {
+      position: absolute;
+      top: -60px;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- APP HEADER -->
+    <header>
+      <h1>SKIFTKALKYL</h1>
+      <p>Din smarta löne- & övertidssimulator</p>
+    </header>
+
+    <!-- VY 1: LANDNINGSSKÄRM / STARTLÄGE -->
+    <div id="view-landing" class="view active">
+      <!-- Månadslön inställning (sparas i localStorage) -->
+      <div class="card">
+        <div class="form-group">
+          <label for="monthly-salary">Månadslön (kr)</label>
+          <div class="salary-input-container">
+            <input type="number" id="monthly-salary" placeholder="Ange din grundlön..." min="0" step="100">
+            <span>kr</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kalkylatorval -->
+      <div style="margin-top: 10px;">
+        <button class="menu-button btn-ob" onclick="navigateTo('ob')">
+          <div class="menu-button-content">
+            <span class="menu-button-title">Obekväm arbetstid (OB)</span>
+            <span class="menu-button-desc">Kvällar, nätter, helger & storhelger</span>
+          </div>
+        </button>
+
+        <button class="menu-button btn-ot" onclick="navigateTo('overtime')">
+          <div class="menu-button-content">
+            <span class="menu-button-title">Övertidskalkylator</span>
+            <span class="menu-button-desc">Enkel & Kvalificerad kompensationslön</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- VY 2: OB-KALKYLATORN -->
+    <div id="view-ob" class="view">
+      <button class="btn-back" onclick="navigateTo('landing')">← Tillbaka</button>
+      
+      <div class="card" id="ob-input-card">
+        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--accent-green);">OB-Beräkning</h2>
+        
+        <div class="form-group">
+          <label for="ob-start">Passets Start</label>
+          <input type="datetime-local" id="ob-start">
+        </div>
+        
+        <div class="form-group">
+          <label for="ob-end">Passets Slut</label>
+          <input type="datetime-local" id="ob-end">
+        </div>
+
+        <div class="form-group">
+          <label>Snabbval för pass</label>
+          <div class="presets-container">
+            <button class="preset-btn" onclick="setPreset('ob', 'dag')">Dagpass (06:45-15:30)</button>
+            <button class="preset-btn" onclick="setPreset('ob', 'kvall')">Kvällspass (15:00-23:30)</button>
+            <button class="preset-btn" onclick="setPreset('ob', 'natt')">Nattpass (22:00-07:00)</button>
+            <button class="preset-btn" onclick="setPreset('ob', 'forstark_vd')">Förstärkning vardag (17:00-02:00)</button>
+            <button class="preset-btn" onclick="setPreset('ob', 'forstark_hg')">Förstärkning helg (19:00-04:00)</button>
+          </div>
+        </div>
+
+        <button class="btn-action" onclick="calculateOB()">RÄKNA UT</button>
+      </div>
+
+      <!-- OB RESULTATKORT -->
+      <div id="ob-result" class="card result-display">
+        <div class="result-header">
+          <div class="result-label">Total OB-Ersättning</div>
+          <div class="result-value" id="ob-total-val">+ 0 kr</div>
+          <div class="result-subvalue" id="ob-hours-val">0 timmar totalt</div>
+        </div>
+
+        <div class="breakdown-list" id="ob-breakdown">
+          <!-- Dynamiska OB-rader genereras här -->
+        </div>
+
+        <!-- Ändra tider / Räkna igen knapp -->
+        <button class="preset-btn btn-reset-ob" style="margin-top: 24px; width: 100%;" onclick="resetObCalc()">
+          Ändra tider / Räkna igen
+        </button>
+      </div>
+    </div>
+
+    <!-- VY 3: ÖVERTIDSKALKYLATORN -->
+    <div id="view-overtime" class="view">
+      <button class="btn-back" onclick="navigateTo('landing')">← Tillbaka</button>
+      
+      <div class="card" id="ot-input-card">
+        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--accent-gold);">Övertidsberäkning</h2>
+        
+        <div class="form-group">
+          <label for="ot-start">Övertidens Start</label>
+          <input type="datetime-local" id="ot-start">
+        </div>
+        
+        <div class="form-group">
+          <label for="ot-end">Övertidens Slut</label>
+          <input type="datetime-local" id="ot-end">
+        </div>
+
+        <div class="form-group">
+          <label>Snabbval för pass</label>
+          <div class="presets-container">
+            <button class="preset-btn" onclick="setPreset('ot', 'dag')">Dagpass (06:45-15:30)</button>
+            <button class="preset-btn" onclick="setPreset('ot', 'kvall')">Kvällspass (15:00-23:30)</button>
+            <button class="preset-btn" onclick="setPreset('ot', 'natt')">Nattpass (22:00-07:00)</button>
+            <button class="preset-btn" onclick="setPreset('ot', 'forstark_vd')">Förstärkning vardag (17:00-02:00)</button>
+            <button class="preset-btn" onclick="setPreset('ot', 'forstark_hg')">Förstärkning helg (19:00-04:00)</button>
+          </div>
+        </div>
+
+        <button class="btn-action btn-action-ot" onclick="calculateOvertime()">RÄKNA UT</button>
+      </div>
+
+      <!-- ÖVERTID RESULTATKORT -->
+      <div id="ot-result" class="card result-display">
+        <div class="result-header">
+          <div class="result-label">Total Övertidsersättning</div>
+          <div class="result-value" id="ot-total-val" style="color: var(--accent-gold);">+ 0 kr</div>
+          <div class="result-subvalue" id="ot-comp-val">0.0 h komptid genererat</div>
+        </div>
+
+        <div class="breakdown-list" id="ot-breakdown">
+          <!-- Dynamiska Övertidsrader genereras här -->
+        </div>
+
+        <!-- Ändra tider / Räkna igen knapp -->
+        <button class="preset-btn btn-reset-ot" style="margin-top: 24px; width: 100%;" onclick="resetOtCalc()">
+          Ändra tider / Räkna igen
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONTAINER FÖR PENGARREGN -->
+  <div id="cash-rain-container"></div>
+
+  <!-- JS LOGIK & BERÄKNINGSKÄRNAN -->
+  <script>
+    // ----------------------------------------------------
+    // INITIALISERING & LOCAL STORAGE
+    // ----------------------------------------------------
+    const salaryInput = document.getElementById('monthly-salary');
+
+    // Ladda sparat värde för månadslön
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedSalary = localStorage.getItem('monthly_salary');
+      if (savedSalary) {
+        salaryInput.value = savedSalary;
+      }
+      
+      // Sätt smarta standardtider i inmatningsfälten
+      initializeDefaultDates();
+
+      // Aktivera automatisk uppdatering av sluttid baserat på starttid
+      setupAutoEndDates();
+    });
+
+    // Spara automatiskt månadslön vid ändring
+    salaryInput.addEventListener('input', () => {
+      localStorage.setItem('monthly_salary', salaryInput.value);
+    });
+
+    // Registrera Service Worker för 100% offline-funktionalitet
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registrerad!', reg))
+          .catch(err => console.log('Service Worker misslyckades:', err));
+      });
+    }
+
+    // ----------------------------------------------------
+    // VY NAVIGATION
+    // ----------------------------------------------------
+    function navigateTo(viewId) {
+      // Dölj alla vyer
+      document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active');
+      });
+      
+      // Visa målvyn
+      document.getElementById(`view-${viewId}`).classList.add('active');
+      
+      // Återställ inmatningskort och dölj resultat
+      const obInputCard = document.getElementById('ob-input-card');
+      const otInputCard = document.getElementById('ot-input-card');
+      if (obInputCard) obInputCard.style.display = 'block';
+      if (otInputCard) otInputCard.style.display = 'block';
+      
+      document.getElementById('ob-result').style.display = 'none';
+      document.getElementById('ot-result').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetObCalc() {
+      document.getElementById('ob-result').style.display = 'none';
+      document.getElementById('ob-input-card').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetOtCalc() {
+      document.getElementById('ot-result').style.display = 'none';
+      document.getElementById('ot-input-card').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Fyller datetime-local med dagens datum och passande tider
+    function initializeDefaultDates() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      
+      // Standardpass: Idag 18:00 till imorgon 03:00 (bra nattpass-test!)
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      const tYear = tomorrow.getFullYear();
+      const tMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const tDay = String(tomorrow.getDate()).padStart(2, '0');
+
+      document.getElementById('ob-start').value = `${year}-${month}-${day}T18:00`;
+      document.getElementById('ob-end').value = `${tYear}-${tMonth}-${tDay}T03:00`;
+      
+      document.getElementById('ot-start').value = `${year}-${month}-${day}T17:00`;
+      document.getElementById('ot-end').value = `${year}-${month}-${day}T21:00`;
+    }
+
+    // Justerar slut-datumet automatiskt när man ändrar start-datumet
+    function setupAutoEndDates() {
+      const obStart = document.getElementById('ob-start');
+      const obEnd = document.getElementById('ob-end');
+      const otStart = document.getElementById('ot-start');
+      const otEnd = document.getElementById('ot-end');
+
+      function handleStartChange(startInput, endInput) {
+        if (!startInput.value || !endInput.value) return;
+
+        const startDate = new Date(startInput.value);
+        const [startDatePart, startTimePart] = startInput.value.split('T');
+        const [endDatePart, endTimePart] = endInput.value.split('T');
+        if (!startTimePart || !endTimePart) return;
+
+        // Jämför enbart tiderna (HH:MM)
+        const [startHH, startMM] = startTimePart.split(':').map(Number);
+        const [endHH, endMM] = endTimePart.split(':').map(Number);
+
+        const startMinutes = startHH * 60 + startMM;
+        const endMinutes = endHH * 60 + endMM;
+
+        let targetDate = new Date(startDate);
+        if (endMinutes < startMinutes) {
+          // Sluttid är tidigare än starttid -> passet sträcker sig över midnatt
+          targetDate.setDate(startDate.getDate() + 1);
+        }
+
+        const ty = targetDate.getFullYear();
+        const tm = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const td = String(targetDate.getDate()).padStart(2, '0');
+
+        endInput.value = `${ty}-${tm}-${td}T${endTimePart}`;
+      }
+
+      obStart.addEventListener('change', () => handleStartChange(obStart, obEnd));
+      obStart.addEventListener('input', () => handleStartChange(obStart, obEnd));
+      otStart.addEventListener('change', () => handleStartChange(otStart, otEnd));
+      otStart.addEventListener('input', () => handleStartChange(otStart, otEnd));
+    }
+
+    // ----------------------------------------------------
+    // SNABBVALSPRESETS FÖR ENKLARE DEMO & TESTNING
+    // ----------------------------------------------------
+    function setPreset(calcType, presetName) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      const tYear = tomorrow.getFullYear();
+      const tMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const tDay = String(tomorrow.getDate()).padStart(2, '0');
+
+      let startVal = '';
+      let endVal = '';
+
+      if (presetName === 'dag') {
+        startVal = `${year}-${month}-${day}T06:45`;
+        endVal = `${year}-${month}-${day}T15:30`;
+      } else if (presetName === 'kvall') {
+        startVal = `${year}-${month}-${day}T15:00`;
+        endVal = `${year}-${month}-${day}T23:30`;
+      } else if (presetName === 'natt') {
+        startVal = `${year}-${month}-${day}T22:00`;
+        endVal = `${tYear}-${tMonth}-${tDay}T07:00`;
+      } else if (presetName === 'forstark_vd') {
+        // Vardagspass: sätts på dagens datum om det är vardag, annars nästa måndag
+        let target = new Date(now);
+        const dayOfWeek = target.getDay();
+        if (dayOfWeek === 0) { // Söndag -> flytta till måndag (imorgon)
+          target = tomorrow;
+        } else if (dayOfWeek === 6) { // Lördag -> flytta till måndag (om 2 dagar)
+          target.setDate(target.getDate() + 2);
+        }
+        const ty = target.getFullYear();
+        const tm = String(target.getMonth() + 1).padStart(2, '0');
+        const td = String(target.getDate()).padStart(2, '0');
+
+        const nextDay = new Date(target);
+        nextDay.setDate(target.getDate() + 1);
+        const ndy = nextDay.getFullYear();
+        const ndm = String(nextDay.getMonth() + 1).padStart(2, '0');
+        const ndd = String(nextDay.getDate()).padStart(2, '0');
+
+        startVal = `${ty}-${tm}-${td}T17:00`;
+        endVal = `${ndy}-${ndm}-${ndd}T02:00`;
+      } else if (presetName === 'forstark_hg') {
+        // Helgpass: Hitta nästa lördag för att garantera att det hamnar på en helg!
+        let sat = new Date(now);
+        const daysToSat = (6 - sat.getDay() + 7) % 7;
+        sat.setDate(sat.getDate() + daysToSat);
+
+        const sy = sat.getFullYear();
+        const sm = String(sat.getMonth() + 1).padStart(2, '0');
+        const sd = String(sat.getDate()).padStart(2, '0');
+
+        const sun = new Date(sat);
+        sun.setDate(sat.getDate() + 1);
+        const suy = sun.getFullYear();
+        const sum = String(sun.getMonth() + 1).padStart(2, '0');
+        const sud = String(sun.getDate()).padStart(2, '0');
+
+        startVal = `${sy}-${sm}-${sd}T19:00`;
+        endVal = `${suy}-${sum}-${sud}T04:00`;
+      }
+
+      if (calcType === 'ob') {
+        document.getElementById('ob-start').value = startVal;
+        document.getElementById('ob-end').value = endVal;
+      } else if (calcType === 'ot') {
+        document.getElementById('ot-start').value = startVal;
+        document.getElementById('ot-end').value = endVal;
+      }
+    }
+
+    // ----------------------------------------------------
+    // DETEKTOR FÖR RÖDA DAGAR / HELGDAGAR (2026)
+    // ----------------------------------------------------
+    function isFreeDay(date) {
+      const day = date.getDay(); // 0 = Söndag, 6 = Lördag
+      if (day === 0 || day === 6) return true;
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const dayOfMonth = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${dayOfMonth}`;
+
+      // Svenska röda dagar & aftnar för 2026
+      const holidays = [
+        '2026-01-01', // Nyårsdagen
+        '2026-01-06', // Trettondedag jul
+        '2026-04-03', // Långfredag
+        '2026-04-05', // Påskdagen
+        '2026-04-06', // Annandag påsk
+        '2026-05-01', // Första maj
+        '2026-05-14', // Kristi himmelsfärdsdag
+        '2026-06-06', // Sveriges nationaldag
+        '2026-06-19', // Midsommarafton (Räknas som helg)
+        '2026-06-20', // Midsommardagen
+        '2026-10-31', // Alla helgons dag
+        '2026-12-24', // Julafton (Räknas som helg)
+        '2026-12-25', // Juldagen
+        '2026-12-26', // Annandag jul
+        '2026-12-31', // Nyårsafton (Räknas som helg)
+        '2027-01-01'  // Nyårsdagen 2027 (övergång nyårsnatt)
+      ];
+
+      return holidays.includes(dateStr);
+    }
+
+    // ----------------------------------------------------
+    // OB REGELVERK (DYNAMISK TIMME-FÖR-TIMME-MAPPNING)
+    // ----------------------------------------------------
+    
+    // OB A (Storhelg): 12:00 aftnar till 12:00 helgdagen efter
+    function isObA(date) {
+      const time = date.getTime();
+
+      // Midsommar 2026: 19 juni 12:00 - 20 juni 12:00
+      const msStart = new Date(2026, 5, 19, 12, 0, 0).getTime();
+      const msEnd = new Date(2026, 5, 20, 12, 0, 0).getTime();
+
+      // Jul 2026: 24 dec 12:00 - 25 dec 12:00
+      const xmStart = new Date(2026, 11, 24, 12, 0, 0).getTime();
+      const xmEnd = new Date(2026, 11, 25, 12, 0, 0).getTime();
+
+      // Nyår 2026: 31 dec 12:00 - 1 jan 2027 12:00
+      const nyStart = new Date(2026, 11, 31, 12, 0, 0).getTime();
+      const nyEnd = new Date(2027, 0, 1, 12, 0, 0).getTime();
+
+      return (time >= msStart && time < msEnd) ||
+             (time >= xmStart && time < xmEnd) ||
+             (time >= nyStart && time < nyEnd);
+    }
+
+    // OB B (Helg/Natt): Fre 22-03, Lör 22-03, samt ALLA dagar 03-06
+    function isObB(date) {
+      const day = date.getDay(); 
+      const hour = date.getHours();
+
+      // Alla dagar 03:00 - 06:00
+      if (hour >= 3 && hour < 6) return true;
+
+      // Fredag kl. 22:00 - Lördag kl. 03:00
+      if (day === 5 && hour >= 22) return true;
+      if (day === 6 && hour < 3) return true;
+
+      // Lördag kl. 22:00 - Söndag kl. 03:00
+      if (day === 6 && hour >= 22) return true;
+      if (day === 0 && hour < 3) return true;
+
+      return false;
+    }
+
+    // OB C: Dag före helgdag/lördag kl. 22:00 till vardag efter helgdag/lördag kl. 03:00
+    function isObCWindow(date) {
+      if (isFreeDay(date)) return true;
+
+      const hour = date.getHours();
+
+      // Vardag före röd dag/lördag startar kl 22:00
+      if (hour >= 22) {
+        const nextDay = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+        if (isFreeDay(nextDay)) return true;
+      }
+
+      // Vardag efter röd dag/söndag pågår fram till kl 03:00
+      if (hour < 3) {
+        const prevDay = new Date(date.getTime() - 24 * 60 * 60 * 1000);
+        if (isFreeDay(prevDay)) return true;
+      }
+
+      return false;
+    }
+
+    // OB D: Mån-Fre 19:00 - 22:00 samt ALLA dagar 22:00 - 03:00 (om ej högre täcker)
+    function isObD(date) {
+      const day = date.getDay();
+      const hour = date.getHours();
+
+      // Alla dagar 22:00 - 03:00
+      if (hour >= 22 || hour < 3) return true;
+
+      // Måndag - Fredag 19:00 - 22:00
+      if (day >= 1 && day <= 5 && hour >= 19 && hour < 22) return true;
+
+      return false;
+    }
+
+    // Returnera korrekt OB-klass baserat på hierarki
+    function getOBRate(date) {
+      if (isObA(date)) {
+        return { rate: 200.0, type: 'A', name: 'OB A (Storhelg)' };
+      }
+      if (isObB(date)) {
+        return { rate: 120.0, type: 'B', name: 'OB B (Helg/Natt)' };
+      }
+      if (isObCWindow(date)) {
+        return { rate: 90.0, type: 'C', name: 'OB C (Helganslutning)' };
+      }
+      if (isObD(date)) {
+        return { rate: 60.0, type: 'D', name: 'OB D (Kväll/Natt)' };
+      }
+      return { rate: 0.0, type: 'None', name: 'Vardag / Normaltid' };
+    }
+
+    // ----------------------------------------------------
+    // OB UTBERÄKNING
+    // ----------------------------------------------------
+    function calculateOB() {
+      const startVal = document.getElementById('ob-start').value;
+      const endVal = document.getElementById('ob-end').value;
+
+      if (!startVal || !endVal) {
+        alert('Vänligen fyll i både start- och sluttid för passet.');
+        return;
+      }
+
+      const startDate = new Date(startVal);
+      const endDate = new Date(endVal);
+
+      if (endDate <= startDate) {
+        alert('Sluttiden måste vara efter starttiden.');
+        return;
+      }
+
+      const startMs = startDate.getTime();
+      const endMs = endDate.getTime();
+
+      // Ackumulatorer för minuter i respektive kategori
+      let minA = 0, minB = 0, minC = 0, minD = 0, minNone = 0;
+
+      // Loopa minut-för-minut för maximal precision vid decimalpass
+      for (let t = startMs; t < endMs; t += 60000) {
+        const d = new Date(t);
+        const rateObj = getOBRate(d);
+        if (rateObj.type === 'A') minA++;
+        else if (rateObj.type === 'B') minB++;
+        else if (rateObj.type === 'C') minC++;
+        else if (rateObj.type === 'D') minD++;
+        else minNone++;
+      }
+
+      // Konvertera minuter till decimaltimmar
+      const hrsA = minA / 60;
+      const hrsB = minB / 60;
+      const hrsC = minC / 60;
+      const hrsD = minD / 60;
+      const hrsNone = minNone / 60;
+      const totalShiftHours = (endMs - startMs) / (1000 * 60 * 60);
+
+      // Beräkna exakta ersättningar (utan avrundning av timmar)
+      const sumA = hrsA * 200;
+      const sumB = hrsB * 120;
+      const sumC = hrsC * 90;
+      const sumD = hrsD * 60;
+      const totalOBPay = sumA + sumB + sumC + sumD;
+
+      // Animerar uträknat belopp för extra wow-känsla!
+      const totalValEl = document.getElementById('ob-total-val');
+      animateValue(totalValEl, 0, totalOBPay, 1200);
+      document.getElementById('ob-hours-val').innerText = `${formatHours(totalShiftHours)} arbetade timmar totalt`;
+
+      // Skapa specifikation av detaljer
+      const breakdownEl = document.getElementById('ob-breakdown');
+      breakdownEl.innerHTML = '';
+
+      const categories = [
+        { name: 'OB A (Storhelg)', exact: hrsA, rate: 200, sum: sumA, color: 'var(--accent-gold)' },
+        { name: 'OB B (Helg/Natt)', exact: hrsB, rate: 120, sum: sumB, color: 'var(--accent-green)' },
+        { name: 'OB C (Helganslutning)', exact: hrsC, rate: 90, sum: sumC, color: 'var(--text-primary)' },
+        { name: 'OB D (Kväll/Natt)', exact: hrsD, rate: 60, sum: sumD, color: 'var(--text-secondary)' }
+      ];
+
+      categories.forEach(cat => {
+        if (cat.exact > 0) {
+          const item = document.createElement('div');
+          item.className = 'breakdown-item';
+          item.innerHTML = `
+            <div class="breakdown-info">
+              <span class="breakdown-name" style="color: ${cat.color};">${cat.name}</span>
+              <span class="breakdown-details">${formatHours(cat.exact)} timmar × ${cat.rate} kr/h</span>
+            </div>
+            <div class="breakdown-sum">+ ${formatSEK(cat.sum)} kr</div>
+          `;
+          breakdownEl.appendChild(item);
+        }
+      });
+
+      if (hrsNone > 0) {
+        const item = document.createElement('div');
+        item.className = 'breakdown-item';
+        item.innerHTML = `
+          <div class="breakdown-info">
+            <span class="breakdown-name" style="color: var(--text-secondary);">Normaltid (Ej OB-berättigad)</span>
+            <span class="breakdown-details">${formatHours(hrsNone)} timmar på ordinarie kontorstid</span>
+          </div>
+          <div class="breakdown-sum">0 kr</div>
+        `;
+        breakdownEl.appendChild(item);
+      }
+
+      // Dölj inmatningskortet så att resultatet visas direkt överst på skärmen!
+      document.getElementById('ob-input-card').style.display = 'none';
+
+      // Visa kortet och utlös pengaregn!
+      document.getElementById('ob-result').style.display = 'block';
+      
+      if (totalOBPay > 0) {
+        triggerCashRain();
+      }
+    }
+
+    // ----------------------------------------------------
+    // ÖVERTID REGELVERK & UTBERÄKNING
+    // ----------------------------------------------------
+    function getOvertimeCategory(date) {
+      if (isFreeDay(date)) {
+        return { type: 'Kvalificerad', name: 'Kvalificerad Övertid (Helg)', divisor: 72, compFactor: 2.0 };
+      }
+
+      const hour = date.getHours();
+      // Enkel övertid: Måndag-fredag dagtid fram till kl. 18:00 (från kl. 07:00)
+      if (hour >= 7 && hour < 18) {
+        return { type: 'Enkel', name: 'Enkel Övertid (Dagtid)', divisor: 94, compFactor: 1.5 };
+      } else {
+        // Kvalificerad övertid: Vardagar kl. 18:00 - 07:00
+        return { type: 'Kvalificerad', name: 'Kvalificerad Övertid (Vardagsnatt)', divisor: 72, compFactor: 2.0 };
+      }
+    }
+
+    function calculateOvertime() {
+      const salary = parseFloat(salaryInput.value);
+      if (isNaN(salary) || salary <= 0) {
+        alert('Vänligen ange en giltig månadslön överst på startskärmen.');
+        navigateTo('landing');
+        return;
+      }
+
+      const startVal = document.getElementById('ot-start').value;
+      const endVal = document.getElementById('ot-end').value;
+
+      if (!startVal || !endVal) {
+        alert('Vänligen fyll i både start- och sluttid för övertidspasset.');
+        return;
+      }
+
+      const startDate = new Date(startVal);
+      const endDate = new Date(endVal);
+
+      if (endDate <= startDate) {
+        alert('Sluttiden måste vara efter starttiden.');
+        return;
+      }
+
+      const startMs = startDate.getTime();
+      const endMs = endDate.getTime();
+
+      let minEnkel = 0;
+      let minKval = 0;
+
+      // Loopa minut för minut
+      for (let t = startMs; t < endMs; t += 60000) {
+        const d = new Date(t);
+        const otCat = getOvertimeCategory(d);
+        if (otCat.type === 'Enkel') {
+          minEnkel++;
+        } else {
+          minKval++;
+        }
+      }
+
+      const hrsEnkel = minEnkel / 60;
+      const hrsKval = minKval / 60;
+      const totalOtHours = hrsEnkel + hrsKval;
+
+      // Timlöneformler
+      const rateEnkel = salary / 94;
+      const rateKval = salary / 72;
+
+      // Utbetalning
+      const payEnkel = hrsEnkel * rateEnkel;
+      const payKval = hrsKval * rateKval;
+      const totalOtPay = payEnkel + payKval;
+
+      // Kompensationstid (Komptid)
+      const compEnkel = hrsEnkel * 1.5;
+      const compKval = hrsKval * 2.0;
+      const totalCompTime = compEnkel + compKval;
+
+      // Animerar uträknat belopp för extra wow-känsla!
+      const totalValEl = document.getElementById('ot-total-val');
+      animateValue(totalValEl, 0, totalOtPay, 1200);
+      document.getElementById('ot-comp-val').innerText = `${formatHours(totalCompTime)} h komptid genererat`;
+
+      const breakdownEl = document.getElementById('ot-breakdown');
+      breakdownEl.innerHTML = '';
+
+      if (hrsEnkel > 0) {
+        const item = document.createElement('div');
+        item.className = 'breakdown-item';
+        item.innerHTML = `
+          <div class="breakdown-info">
+            <span class="breakdown-name" style="color: var(--accent-gold);">Enkel övertid</span>
+            <span class="breakdown-details">${formatHours(hrsEnkel)} h × ${formatSEK(rateEnkel)} kr/h (Lön / 94)<br>Genererar 1.5x komptid: +${formatHours(compEnkel)} h</span>
+          </div>
+          <div class="breakdown-sum">+ ${formatSEK(payEnkel)} kr</div>
+        `;
+        breakdownEl.appendChild(item);
+      }
+
+      if (hrsKval > 0) {
+        const item = document.createElement('div');
+        item.className = 'breakdown-item';
+        item.innerHTML = `
+          <div class="breakdown-info">
+            <span class="breakdown-name" style="color: #ff9500;">Kvalificerad övertid</span>
+            <span class="breakdown-details">${formatHours(hrsKval)} h × ${formatSEK(rateKval)} kr/h (Lön / 72)<br>Genererar 2.0x komptid: +${formatHours(compKval)} h</span>
+          </div>
+          <div class="breakdown-sum">+ ${formatSEK(payKval)} kr</div>
+        `;
+        breakdownEl.appendChild(item);
+      }
+
+      // Totalsummering av timmar
+      const totalItem = document.createElement('div');
+      totalItem.className = 'breakdown-item';
+      totalItem.style.borderTop = '1px solid rgba(255,255,255,0.15)';
+      totalItem.style.marginTop = '8px';
+      totalItem.innerHTML = `
+        <div class="breakdown-info">
+          <span class="breakdown-name" style="font-size: 16px;">Totalt övertidspass</span>
+          <span class="breakdown-details">Totalt arbetad övertid: ${formatHours(totalOtHours)} h</span>
+        </div>
+        <div class="breakdown-sum" style="color: var(--accent-gold); font-size: 18px;">+ ${formatHours(totalCompTime)} h komptid</div>
+      `;
+      breakdownEl.appendChild(totalItem);
+
+      // Dölj inmatningskortet så att resultatet visas direkt överst på skärmen!
+      document.getElementById('ot-input-card').style.display = 'none';
+
+      // Visa kortet och utlös pengaregn!
+      document.getElementById('ot-result').style.display = 'block';
+      
+      if (totalOtPay > 0) {
+        triggerCashRain();
+      }
+    }
+
+    // ----------------------------------------------------
+    // HJÄLPFUNKTIONER (FORMATERING & EFFEKTER)
+    // ----------------------------------------------------
+    function formatSEK(num) {
+      return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+    }
+
+    function formatHours(hrs) {
+      return new Intl.NumberFormat('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(hrs);
+    }
+
+    // Animerar siffersnurr från start till slutvärde för en extra skön känsla
+    function animateValue(element, start, end, duration) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        // Ease-out cubic kurva för en skön inbromsning i slutet
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        const currentValue = start + easeProgress * (end - start);
+        element.innerText = `+ ${formatSEK(currentValue)} kr`;
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    // Syntetiserar ett glittrande och lyxigt kasino-jackpotljud (chime-arpeggio) via Web Audio API!
+    function playCasinoWinSound() {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const ctx = new AudioContextClass();
+        
+        const now = ctx.currentTime;
+        
+        // En blixtsnabb sekvens av 5 kristallklara toner (C-dur arpeggio) för en äkta jackpot-vinstkänsla!
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          // Mjuk triangle-våg med en gnutta harmonisk klang
+          osc.type = 'triangle'; 
+          osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+          
+          gain.gain.setValueAtTime(0, now + idx * 0.07);
+          gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.07 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.35);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(now + idx * 0.07);
+          osc.stop(now + idx * 0.07 + 0.4);
+        });
+        
+        // Spela en extra ljus, kristallklar klockton (G6) på sista tonen för maximal premium-känsla!
+        const oscBell = ctx.createOscillator();
+        const gainBell = ctx.createGain();
+        oscBell.type = 'sine';
+        oscBell.frequency.setValueAtTime(1567.98, now + 0.28); // G6 (High Bell)
+        
+        gainBell.gain.setValueAtTime(0, now + 0.28);
+        gainBell.gain.linearRampToValueAtTime(0.08, now + 0.28 + 0.02);
+        gainBell.gain.exponentialRampToValueAtTime(0.0001, now + 0.28 + 0.6);
+        
+        oscBell.connect(gainBell);
+        gainBell.connect(ctx.destination);
+        oscBell.start(now + 0.28);
+        oscBell.stop(now + 0.28 + 0.7);
+      } catch (err) {
+        console.log('Jackpot audio error:', err);
+      }
+    }
+
+    // Lyxig kasinoregn-animation (Guldmynt, sedlar, diamanter och stjärnor)
+    function triggerCashRain() {
+      const container = document.getElementById('cash-rain-container');
+      container.innerHTML = ''; // Nollställ gammalt regn
+      
+      // Spela jackpot-ljudet!
+      playCasinoWinSound();
+      
+      // Fallande lyxiga kasino-emojis
+      const emojis = ['🪙', '🪙', '💵', '💵', '💎', '✨', '⭐', '💰', '👑'];
+      const numberOfItems = 65;
+
+      for (let i = 0; i < numberOfItems; i++) {
+        const item = document.createElement('div');
+        item.className = 'cash-item';
+        
+        // Välj slumpmässig emoji
+        item.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        
+        // Slumpa storlek
+        const fontSize = Math.random() * 25 + 20; // 20px - 45px
+        item.style.fontSize = `${fontSize}px`;
+        
+        // Slumpa horisontell start
+        item.style.left = `${Math.random() * 100}vw`;
+        
+        // Slumpa tidslängd & delay för fall
+        const duration = Math.random() * 1.5 + 1.5; // 1.5s - 3s
+        const delay = Math.random() * 0.6; // 0s - 0.6s
+        
+        // Komplett shorthand inline-animation för total iOS/Safari-kompatibilitet
+        item.style.animation = `fall ${duration}s linear ${delay}s 1 normal forwards, sway 2s ease-in-out ${delay}s infinite alternate`;
+
+        container.appendChild(item);
+      }
+
+      // Rensa efter 3.5 sekunder
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
