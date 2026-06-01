@@ -730,23 +730,26 @@
         <!-- Field group for Ordinarie Pass (Utan flextid) -->
         <div id="tf-ordinarie-pass-group">
           <div class="form-group">
-            <label for="tf-ord-start">Ordinarie Pass Start</label>
+            <label for="tf-ord-start">Ordinarie Pass (Från)</label>
             <input type="datetime-local" id="tf-ord-start">
             <div class="datetime-adjust-container" style="display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px;">
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-start', -60)">-1h</button>
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-start', 60)">+1h</button>
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-start', -15)">-15m</button>
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-start', 15)">+15m</button>
+              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('ord', -60)">-1h</button>
+              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('ord', 60)">+1h</button>
+              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('ord', -15)">-15m</button>
+              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('ord', 15)">+15m</button>
             </div>
           </div>
-          <div class="form-group">
-            <label for="tf-ord-end">Ordinarie Pass Slut</label>
-            <input type="datetime-local" id="tf-ord-end">
-            <div class="datetime-adjust-container" style="display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px;">
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-end', -60)">-1h</button>
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-end', 60)">+1h</button>
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-end', -15)">-15m</button>
-              <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-ord-end', 15)">+15m</button>
+          <!-- Dold för beräkningskompatibilitet -->
+          <input type="datetime-local" id="tf-ord-end" style="display: none;">
+          
+          <div class="form-group" style="margin-top: 10px; margin-bottom: 20px;">
+            <label style="font-size: 11px; color: var(--text-secondary);">Snabbval för ordinarie pass (Från)</label>
+            <div class="presets-container">
+              <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('ord', 'dag')">Dag (06:45-15:30)</button>
+              <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('ord', 'kvall')">Kväll (15:00-23:30)</button>
+              <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('ord', 'natt')">Natt (22:00-07:00)</button>
+              <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('ord', 'forstark_vd')">Vardag (17-02)</button>
+              <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('ord', 'forstark_hg')">Helg (19-04)</button>
             </div>
           </div>
         </div>
@@ -767,33 +770,26 @@
 
         <!-- Field group for Nytt / Förskjutet Pass -->
         <div class="form-group">
-          <label for="tf-new-start">Nytt / Förskjutet Pass Start</label>
+          <label for="tf-new-start">Nytt / Förskjutet Pass (Till)</label>
           <input type="datetime-local" id="tf-new-start">
           <div class="datetime-adjust-container" style="display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px;">
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-start', -60)">-1h</button>
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-start', 60)">+1h</button>
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-start', -15)">-15m</button>
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-start', 15)">+15m</button>
+            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('new', -60)">-1h</button>
+            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('new', 60)">+1h</button>
+            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('new', -15)">-15m</button>
+            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTfTime('new', 15)">+15m</button>
           </div>
         </div>
-        <div class="form-group">
-          <label for="tf-new-end">Nytt / Förskjutet Pass Slut</label>
-          <input type="datetime-local" id="tf-new-end">
-          <div class="datetime-adjust-container" style="display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px;">
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-end', -60)">-1h</button>
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-end', 60)">+1h</button>
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-end', -15)">-15m</button>
-            <button class="preset-btn" style="padding: 6px 12px; font-size: 11px;" onclick="adjustTime('tf-new-end', 15)">+15m</button>
-          </div>
-        </div>
+        <!-- Dold för beräkningskompatibilitet -->
+        <input type="datetime-local" id="tf-new-end" style="display: none;">
 
-        <div class="form-group">
-          <label>Snabbval för tidsförskjutning</label>
+        <div class="form-group" style="margin-top: 10px; margin-bottom: 20px;">
+          <label style="font-size: 11px; color: var(--text-secondary);">Snabbval för nytt/förskjutet pass (Till)</label>
           <div class="presets-container">
-            <button class="preset-btn" onclick="setTfPreset('dag_kvall')">Dagspass ➔ Kvällspass</button>
-            <button class="preset-btn" onclick="setTfPreset('kvall_natt')">Kvällspass ➔ Nattpass</button>
-            <button class="preset-btn" onclick="setTfPreset('tidigare_dag')">Tidigarelagt Dagspass (-2h)</button>
-            <button class="preset-btn" onclick="setTfPreset('senare_dag')">Senarelagt Dagspass (+2h)</button>
+            <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('new', 'dag')">Dag (06:45-15:30)</button>
+            <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('new', 'kvall')">Kväll (15:00-23:30)</button>
+            <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('new', 'natt')">Natt (22:00-07:00)</button>
+            <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('new', 'forstark_vd')">Vardag (17-02)</button>
+            <button class="preset-btn" style="padding: 8px 14px; font-size: 12px;" onclick="setTfPartPreset('new', 'forstark_hg')">Helg (19-04)</button>
           </div>
         </div>
 
@@ -830,6 +826,8 @@
     // INITIALISERING & LOCAL STORAGE
     // ----------------------------------------------------
     const salaryInput = document.getElementById('monthly-salary');
+    let tfOrdDurationMs = 8.5 * 60 * 60 * 1000; // Standard 8.5 timmar (t.ex. 08:00-16:30)
+    let tfNewDurationMs = 8.5 * 60 * 60 * 1000; 
 
     // Ladda sparat värde för månadslön
     window.addEventListener('DOMContentLoaded', () => {
@@ -978,23 +976,31 @@
       obStart.addEventListener('input', () => handleStartChange(obStart, obEnd));
       otStart.addEventListener('change', () => handleStartChange(otStart, otEnd));
       otStart.addEventListener('input', () => handleStartChange(otStart, otEnd));
-      tfOrdStart.addEventListener('change', () => handleStartChange(tfOrdStart, tfOrdEnd));
-      tfOrdStart.addEventListener('input', () => handleStartChange(tfOrdStart, tfOrdEnd));
-      tfNewStart.addEventListener('change', () => handleStartChange(tfNewStart, tfNewEnd));
-      tfNewStart.addEventListener('input', () => handleStartChange(tfNewStart, tfNewEnd));
+      tfOrdStart.addEventListener('change', () => syncTfEndDate('ord'));
+      tfOrdStart.addEventListener('input', () => syncTfEndDate('ord'));
+      tfNewStart.addEventListener('change', () => syncTfEndDate('new'));
+      tfNewStart.addEventListener('input', () => syncTfEndDate('new'));
     }
 
     // ----------------------------------------------------
     // SNABBVALSPRESETS FÖR ENKLARE DEMO & TESTNING
     // ----------------------------------------------------
     function setPreset(calcType, presetName) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
+      let baseDate = new Date();
+      const existingVal = document.getElementById(calcType === 'ob' ? 'ob-start' : 'ot-start').value;
+      if (existingVal) {
+        const parsed = new Date(existingVal);
+        if (!isNaN(parsed.getTime())) {
+          baseDate = parsed;
+        }
+      }
 
-      const tomorrow = new Date(now);
-      tomorrow.setDate(now.getDate() + 1);
+      const year = baseDate.getFullYear();
+      const month = String(baseDate.getMonth() + 1).padStart(2, '0');
+      const day = String(baseDate.getDate()).padStart(2, '0');
+
+      const tomorrow = new Date(baseDate);
+      tomorrow.setDate(baseDate.getDate() + 1);
       const tYear = tomorrow.getFullYear();
       const tMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
       const tDay = String(tomorrow.getDate()).padStart(2, '0');
@@ -1012,8 +1018,8 @@
         startVal = `${year}-${month}-${day}T22:00`;
         endVal = `${tYear}-${tMonth}-${tDay}T07:00`;
       } else if (presetName === 'forstark_vd') {
-        // Vardagspass: sätts på dagens datum om det är vardag, annars nästa måndag
-        let target = new Date(now);
+        // Vardagspass: sätts på basdatumets datum om det är vardag, annars nästa måndag
+        let target = new Date(baseDate);
         const dayOfWeek = target.getDay();
         if (dayOfWeek === 0) { // Söndag -> flytta till måndag (imorgon)
           target = tomorrow;
@@ -1033,8 +1039,8 @@
         startVal = `${ty}-${tm}-${td}T17:00`;
         endVal = `${ndy}-${ndm}-${ndd}T02:00`;
       } else if (presetName === 'forstark_hg') {
-        // Helgpass: Hitta nästa lördag för att garantera att det hamnar på en helg!
-        let sat = new Date(now);
+        // Helgpass: Hitta nästa lördag utifrån basdatumet för att garantera att det hamnar på en helg!
+        let sat = new Date(baseDate);
         const daysToSat = (6 - sat.getDay() + 7) % 7;
         sat.setDate(sat.getDate() + daysToSat);
 
@@ -1635,50 +1641,126 @@
       input.dispatchEvent(new Event('input'));
     }
 
-    // Sätt snabbvalspresets för Tidsförskjutning
-    function setTfPreset(presetType) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
+    // Sätt snabbvalspresets för Tidsförskjutning (separat för Från / Till)
+    function setTfPartPreset(part, presetName) {
+      let baseDate = new Date();
+      const existingVal = document.getElementById(part === 'ord' ? 'tf-ord-start' : 'tf-new-start').value;
+      if (existingVal) {
+        const parsed = new Date(existingVal);
+        if (!isNaN(parsed.getTime())) {
+          baseDate = parsed;
+        }
+      }
 
-      const tomorrow = new Date(now);
-      tomorrow.setDate(now.getDate() + 1);
+      const year = baseDate.getFullYear();
+      const month = String(baseDate.getMonth() + 1).padStart(2, '0');
+      const day = String(baseDate.getDate()).padStart(2, '0');
+
+      const tomorrow = new Date(baseDate);
+      tomorrow.setDate(baseDate.getDate() + 1);
       const tYear = tomorrow.getFullYear();
       const tMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
       const tDay = String(tomorrow.getDate()).padStart(2, '0');
 
-      let ordStart = '';
-      let ordEnd = '';
-      let newStart = '';
-      let newEnd = '';
+      let startVal = '';
+      let endVal = '';
 
-      if (presetType === 'dag_kvall') {
-        ordStart = `${year}-${month}-${day}T06:45`;
-        ordEnd = `${year}-${month}-${day}T15:30`;
-        newStart = `${year}-${month}-${day}T15:00`;
-        newEnd = `${year}-${month}-${day}T23:30`;
-      } else if (presetType === 'kvall_natt') {
-        ordStart = `${year}-${month}-${day}T15:00`;
-        ordEnd = `${year}-${month}-${day}T23:30`;
-        newStart = `${year}-${month}-${day}T22:00`;
-        newEnd = `${tYear}-${tMonth}-${tDay}T07:00`;
-      } else if (presetType === 'tidigare_dag') {
-        ordStart = `${year}-${month}-${day}T06:45`;
-        ordEnd = `${year}-${month}-${day}T15:30`;
-        newStart = `${year}-${month}-${day}T04:45`;
-        newEnd = `${year}-${month}-${day}T13:30`;
-      } else if (presetType === 'senare_dag') {
-        ordStart = `${year}-${month}-${day}T06:45`;
-        ordEnd = `${year}-${month}-${day}T15:30`;
-        newStart = `${year}-${month}-${day}T08:45`;
-        newEnd = `${year}-${month}-${day}T17:30`;
+      if (presetName === 'dag') {
+        startVal = `${year}-${month}-${day}T06:45`;
+        endVal = `${year}-${month}-${day}T15:30`;
+      } else if (presetName === 'kvall') {
+        startVal = `${year}-${month}-${day}T15:00`;
+        endVal = `${year}-${month}-${day}T23:30`;
+      } else if (presetName === 'natt') {
+        startVal = `${year}-${month}-${day}T22:00`;
+        endVal = `${tYear}-${tMonth}-${tDay}T07:00`;
+      } else if (presetName === 'forstark_vd') {
+        let target = new Date(baseDate);
+        const dayOfWeek = target.getDay();
+        if (dayOfWeek === 0) {
+          target = tomorrow;
+        } else if (dayOfWeek === 6) {
+          target.setDate(target.getDate() + 2);
+        }
+        const ty = target.getFullYear();
+        const tm = String(target.getMonth() + 1).padStart(2, '0');
+        const td = String(target.getDate()).padStart(2, '0');
+
+        const nextDay = new Date(target);
+        nextDay.setDate(target.getDate() + 1);
+        const ndy = nextDay.getFullYear();
+        const ndm = String(nextDay.getMonth() + 1).padStart(2, '0');
+        const ndd = String(nextDay.getDate()).padStart(2, '0');
+
+        startVal = `${ty}-${tm}-${td}T17:00`;
+        endVal = `${ndy}-${ndm}-${ndd}T02:00`;
+      } else if (presetName === 'forstark_hg') {
+        let sat = new Date(baseDate);
+        const daysToSat = (6 - sat.getDay() + 7) % 7;
+        sat.setDate(sat.getDate() + daysToSat);
+
+        const sy = sat.getFullYear();
+        const sm = String(sat.getMonth() + 1).padStart(2, '0');
+        const sd = String(sat.getDate()).padStart(2, '0');
+
+        const sun = new Date(sat);
+        sun.setDate(sat.getDate() + 1);
+        const suy = sun.getFullYear();
+        const sum = String(sun.getMonth() + 1).padStart(2, '0');
+        const sud = String(sun.getDate()).padStart(2, '0');
+
+        startVal = `${sy}-${sm}-${sd}T19:00`;
+        endVal = `${suy}-${sum}-${sud}T04:00`;
       }
 
-      document.getElementById('tf-ord-start').value = ordStart;
-      document.getElementById('tf-ord-end').value = ordEnd;
-      document.getElementById('tf-new-start').value = newStart;
-      document.getElementById('tf-new-end').value = newEnd;
+      // Spara varaktigheten i millisekunder
+      const duration = new Date(endVal).getTime() - new Date(startVal).getTime();
+      if (part === 'ord') {
+        tfOrdDurationMs = duration;
+      } else {
+        tfNewDurationMs = duration;
+      }
+
+      document.getElementById('tf-' + part + '-start').value = startVal;
+      document.getElementById('tf-' + part + '-end').value = endVal;
+    }
+
+    // Synka sluttid baserat på sparat varaktighet
+    function syncTfEndDate(part) {
+      const startEl = document.getElementById(`tf-${part}-start`);
+      const endEl = document.getElementById(`tf-${part}-end`);
+      if (!startEl || !startEl.value) return;
+
+      const startDate = new Date(startEl.value);
+      const duration = (part === 'ord') ? tfOrdDurationMs : tfNewDurationMs;
+      const endDate = new Date(startDate.getTime() + duration);
+
+      const year = endDate.getFullYear();
+      const month = String(endDate.getMonth() + 1).padStart(2, '0');
+      const day = String(endDate.getDate()).padStart(2, '0');
+      const hours = String(endDate.getHours()).padStart(2, '0');
+      const mins = String(endDate.getMinutes()).padStart(2, '0');
+
+      endEl.value = `${year}-${month}-${day}T${hours}:${mins}`;
+    }
+
+    // Justera starttid och synka sluttid för TF
+    function adjustTfTime(part, minutes) {
+      const startEl = document.getElementById(`tf-${part}-start`);
+      if (!startEl || !startEl.value) return;
+
+      const date = new Date(startEl.value);
+      date.setMinutes(date.getMinutes() + minutes);
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const mins = String(date.getMinutes()).padStart(2, '0');
+
+      startEl.value = `${year}-${month}-${day}T${hours}:${mins}`;
+      
+      syncTfEndDate(part);
     }
 
     // Syntetiserar ett glittrande och lyxigt kasino-jackpotljud (chime-arpeggio) via Web Audio API!
