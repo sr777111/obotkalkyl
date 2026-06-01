@@ -121,6 +121,43 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(226, 184, 87, 0.03);
     }
 
+    #tf-input-card, #tf-result {
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.03);
+    }
+
+    /* Segmented Control styling */
+    .segmented-control {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .segmented-control input[type="radio"] {
+      display: none;
+    }
+    .segmented-control label {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      margin-bottom: 0 !important;
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+    }
+    .segmented-control input[type="radio"]:checked + label {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
     /* FORMULÄRELEMENT */
     .form-group {
       margin-bottom: 20px;
@@ -252,6 +289,13 @@
       color: var(--accent-gold);
     }
 
+    /* Tidsförskjutning Knapp (Apple Blue) */
+    .btn-tf {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(59, 130, 246, 0.08) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      color: var(--accent-blue);
+    }
+
     /* RÄKNA UT KNAPPAR */
     .btn-action {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -264,6 +308,12 @@
       background: linear-gradient(135deg, #e2b857 0%, #c5a059 100%);
       color: #000000;
       box-shadow: 0 8px 25px rgba(226, 184, 87, 0.3);
+    }
+
+    .btn-action-tf {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #ffffff;
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
     }
 
     /* Tillbakaknapp (Apple Minimalist) */
@@ -381,6 +431,11 @@
       text-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
     }
 
+    #tf-result .result-value {
+      color: var(--accent-blue);
+      text-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+    }
+
     .result-subvalue {
       font-size: 16px;
       font-weight: 600;
@@ -392,6 +447,10 @@
     
     #ob-result .result-subvalue {
       color: var(--accent-green);
+    }
+
+    #tf-result .result-subvalue {
+      color: var(--accent-blue);
     }
 
     /* SPECIFIKATIONSLISTA */
@@ -449,6 +508,14 @@
       color: var(--accent-gold) !important;
       background: rgba(226, 184, 87, 0.05) !important;
       box-shadow: 0 4px 15px rgba(226, 184, 87, 0.15) !important;
+      border-radius: 16px !important;
+    }
+
+    .btn-reset-tf {
+      border: 1px solid var(--accent-blue) !important;
+      color: var(--accent-blue) !important;
+      background: rgba(59, 130, 246, 0.05) !important;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15) !important;
       border-radius: 16px !important;
     }
 
@@ -516,7 +583,6 @@
           <label for="monthly-salary">Månadslön (kr)</label>
           <div class="salary-input-container">
             <input type="number" id="monthly-salary" placeholder="Ange din grundlön..." min="0" step="100">
-            <span>kr</span>
           </div>
         </div>
       </div>
@@ -534,6 +600,13 @@
           <div class="menu-button-content">
             <span class="menu-button-title">Övertidskalkylator</span>
             <span class="menu-button-desc">Enkel & Kvalificerad kompensationslön</span>
+          </div>
+        </button>
+
+        <button class="menu-button btn-tf" onclick="navigateTo('tf')">
+          <div class="menu-button-content">
+            <span class="menu-button-title">Tidsförskjutning</span>
+            <span class="menu-button-desc">Tillägg för förskjuten arbetstid</span>
           </div>
         </button>
       </div>
@@ -639,6 +712,79 @@
       </div>
     </div>
 
+    <!-- VY 4: TIDSFÖRSKJUTNINGSKALKYLATORN -->
+    <div id="view-tf" class="view">
+      <button class="btn-back" onclick="navigateTo('landing')">← Tillbaka</button>
+      
+      <div class="card" id="tf-input-card">
+        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--accent-blue);">Tidsförskjutning</h2>
+        
+        <div class="segmented-control">
+          <input type="radio" id="tf-type-no-flex" name="tf-type" value="no-flex" checked onchange="toggleTfTypeFields()">
+          <label for="tf-type-no-flex">Utan flextid</label>
+          
+          <input type="radio" id="tf-type-flex" name="tf-type" value="flex" onchange="toggleTfTypeFields()">
+          <label for="tf-type-flex">Med flextid</label>
+        </div>
+        
+        <!-- Field group for Ordinarie Pass (Utan flextid) -->
+        <div id="tf-ordinarie-pass-group">
+          <div class="form-group">
+            <label for="tf-ord-start">Ordinarie Pass Start</label>
+            <input type="datetime-local" id="tf-ord-start">
+          </div>
+          <div class="form-group">
+            <label for="tf-ord-end">Ordinarie Pass Slut</label>
+            <input type="datetime-local" id="tf-ord-end">
+          </div>
+        </div>
+
+        <!-- Field group for Flexram (Med flextid) -->
+        <div id="tf-flexram-group" style="display: none;">
+          <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Flexram Start</label>
+              <input type="time" id="tf-flex-start" value="06:00" style="width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px; font-size: 16px; color: var(--text-primary); font-weight: 500; outline: none; border-color: rgba(255, 255, 255, 0.1);">
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Flexram Slut</label>
+              <input type="time" id="tf-flex-end" value="22:00" style="width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px; font-size: 16px; color: var(--text-primary); font-weight: 500; outline: none; border-color: rgba(255, 255, 255, 0.1);">
+            </div>
+          </div>
+        </div>
+
+        <!-- Field group for Nytt / Förskjutet Pass -->
+        <div class="form-group">
+          <label for="tf-new-start">Nytt / Förskjutet Pass Start</label>
+          <input type="datetime-local" id="tf-new-start">
+        </div>
+        <div class="form-group">
+          <label for="tf-new-end">Nytt / Förskjutet Pass Slut</label>
+          <input type="datetime-local" id="tf-new-end">
+        </div>
+
+        <button class="btn-action btn-action-tf" onclick="calculateTidsforskjutning()">RÄKNA UT</button>
+      </div>
+
+      <!-- TIDSFÖRSKJUTNING RESULTATKORT -->
+      <div id="tf-result" class="card result-display">
+        <div class="result-header">
+          <div class="result-label">Tillägg för Tidsförskjutning</div>
+          <div class="result-value" id="tf-total-val">+ 0 kr</div>
+          <div class="result-subvalue" id="tf-hours-val">0 timmar totalt</div>
+        </div>
+
+        <div class="breakdown-list" id="tf-breakdown">
+          <!-- Dynamiska rader genereras här -->
+        </div>
+
+        <!-- Ändra tider / Räkna igen knapp -->
+        <button class="preset-btn btn-reset-tf" style="margin-top: 24px; width: 100%;" onclick="resetTfCalc()">
+          Ändra tider / Räkna igen
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <!-- CONTAINER FÖR PENGARREGN -->
@@ -679,6 +825,12 @@
       });
     }
 
+    function toggleTfTypeFields() {
+      const isFlex = document.getElementById('tf-type-flex').checked;
+      document.getElementById('tf-ordinarie-pass-group').style.display = isFlex ? 'none' : 'block';
+      document.getElementById('tf-flexram-group').style.display = isFlex ? 'block' : 'none';
+    }
+
     // ----------------------------------------------------
     // VY NAVIGATION
     // ----------------------------------------------------
@@ -694,11 +846,14 @@
       // Återställ inmatningskort och dölj resultat
       const obInputCard = document.getElementById('ob-input-card');
       const otInputCard = document.getElementById('ot-input-card');
+      const tfInputCard = document.getElementById('tf-input-card');
       if (obInputCard) obInputCard.style.display = 'block';
       if (otInputCard) otInputCard.style.display = 'block';
+      if (tfInputCard) tfInputCard.style.display = 'block';
       
       document.getElementById('ob-result').style.display = 'none';
       document.getElementById('ot-result').style.display = 'none';
+      document.getElementById('tf-result').style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -711,6 +866,12 @@
     function resetOtCalc() {
       document.getElementById('ot-result').style.display = 'none';
       document.getElementById('ot-input-card').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetTfCalc() {
+      document.getElementById('tf-result').style.display = 'none';
+      document.getElementById('tf-input-card').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -733,6 +894,11 @@
       
       document.getElementById('ot-start').value = `${year}-${month}-${day}T17:00`;
       document.getElementById('ot-end').value = `${year}-${month}-${day}T21:00`;
+
+      document.getElementById('tf-ord-start').value = `${year}-${month}-${day}T08:00`;
+      document.getElementById('tf-ord-end').value = `${year}-${month}-${day}T16:30`;
+      document.getElementById('tf-new-start').value = `${year}-${month}-${day}T10:00`;
+      document.getElementById('tf-new-end').value = `${year}-${month}-${day}T18:30`;
     }
 
     // Justerar slut-datumet automatiskt när man ändrar start-datumet
@@ -741,6 +907,10 @@
       const obEnd = document.getElementById('ob-end');
       const otStart = document.getElementById('ot-start');
       const otEnd = document.getElementById('ot-end');
+      const tfOrdStart = document.getElementById('tf-ord-start');
+      const tfOrdEnd = document.getElementById('tf-ord-end');
+      const tfNewStart = document.getElementById('tf-new-start');
+      const tfNewEnd = document.getElementById('tf-new-end');
 
       function handleStartChange(startInput, endInput) {
         if (!startInput.value || !endInput.value) return;
@@ -774,6 +944,10 @@
       obStart.addEventListener('input', () => handleStartChange(obStart, obEnd));
       otStart.addEventListener('change', () => handleStartChange(otStart, otEnd));
       otStart.addEventListener('input', () => handleStartChange(otStart, otEnd));
+      tfOrdStart.addEventListener('change', () => handleStartChange(tfOrdStart, tfOrdEnd));
+      tfOrdStart.addEventListener('input', () => handleStartChange(tfOrdStart, tfOrdEnd));
+      tfNewStart.addEventListener('change', () => handleStartChange(tfNewStart, tfNewEnd));
+      tfNewStart.addEventListener('input', () => handleStartChange(tfNewStart, tfNewEnd));
     }
 
     // ----------------------------------------------------
@@ -1223,6 +1397,157 @@
       document.getElementById('ot-result').style.display = 'block';
       
       if (totalOtPay > 0) {
+        triggerCashRain();
+      }
+    }
+
+    // ----------------------------------------------------
+    // TIDSFÖRSKJUTNING UTBERÄKNING
+    // ----------------------------------------------------
+    function calculateTidsforskjutning() {
+      const salary = parseFloat(salaryInput.value);
+      if (isNaN(salary) || salary <= 0) {
+        alert('Vänligen ange en giltig månadslön överst på startskärmen.');
+        navigateTo('landing');
+        return;
+      }
+
+      const isFlex = document.getElementById('tf-type-flex').checked;
+      const newStartVal = document.getElementById('tf-new-start').value;
+      const newEndVal = document.getElementById('tf-new-end').value;
+
+      if (!newStartVal || !newEndVal) {
+        alert('Vänligen fyll i start- och sluttid för det nya/förskjutna passet.');
+        return;
+      }
+
+      const newStart = new Date(newStartVal);
+      const newEnd = new Date(newEndVal);
+
+      if (newEnd <= newStart) {
+        alert('Sluttiden för det nya passet måste vara efter starttiden.');
+        return;
+      }
+
+      let periodStartMs, periodEndMs;
+      let flexStartMins = 0, flexEndMins = 0;
+
+      if (!isFlex) {
+        const ordStartVal = document.getElementById('tf-ord-start').value;
+        const ordEndVal = document.getElementById('tf-ord-end').value;
+
+        if (!ordStartVal || !ordEndVal) {
+          alert('Vänligen fyll i start- och sluttid för det ordinarie passet.');
+          return;
+        }
+
+        const ordStart = new Date(ordStartVal);
+        const ordEnd = new Date(ordEndVal);
+
+        if (ordEnd <= ordStart) {
+          alert('Sluttiden för det ordinarie passet måste vara efter starttiden.');
+          return;
+        }
+
+        // Perioden börjar 2 timmar före och slutar 2 timmar efter
+        periodStartMs = ordStart.getTime() - 2 * 60 * 60 * 1000;
+        periodEndMs = ordEnd.getTime() + 2 * 60 * 60 * 1000;
+      } else {
+        const flexStartVal = document.getElementById('tf-flex-start').value;
+        const flexEndVal = document.getElementById('tf-flex-end').value;
+
+        if (!flexStartVal || !flexEndVal) {
+          alert('Vänligen fyll i start- och sluttid för flexramen.');
+          return;
+        }
+
+        const [fsH, fsM] = flexStartVal.split(':').map(Number);
+        const [feH, feM] = flexEndVal.split(':').map(Number);
+        flexStartMins = fsH * 60 + fsM;
+        flexEndMins = feH * 60 + feM;
+      }
+
+      // Loopa minut för minut genom det förskjutna passet
+      let minWithin = 0;
+      let minOutside = 0;
+
+      for (let t = newStart.getTime(); t < newEnd.getTime(); t += 60000) {
+        const d = new Date(t);
+        let isWithin = false;
+
+        if (!isFlex) {
+          isWithin = (t >= periodStartMs && t < periodEndMs);
+        } else {
+          const currentMins = d.getHours() * 60 + d.getMinutes();
+          if (flexEndMins >= flexStartMins) {
+            isWithin = (currentMins >= flexStartMins && currentMins < flexEndMins);
+          } else {
+            isWithin = (currentMins >= flexStartMins || currentMins < flexEndMins);
+          }
+        }
+
+        if (isWithin) {
+          minWithin++;
+        } else {
+          minOutside++;
+        }
+      }
+
+      const hrsWithin = minWithin / 60;
+      const hrsOutside = minOutside / 60;
+      const totalShiftHours = (newEnd.getTime() - newStart.getTime()) / (1000 * 60 * 60);
+
+      // Ersättning:
+      // Inom: 7.80 kr/h
+      // Utanför: 1/165 av månadslönen / h
+      const rateWithin = 7.80;
+      const rateOutside = salary / 165;
+
+      const payWithin = hrsWithin * rateWithin;
+      const payOutside = hrsOutside * rateOutside;
+      const totalPay = payWithin + payOutside;
+
+      // Animerar uträknat belopp
+      const totalValEl = document.getElementById('tf-total-val');
+      animateValue(totalValEl, 0, totalPay, 1200);
+      document.getElementById('tf-hours-val').innerText = `${formatHours(totalShiftHours)} timmar förskjuten arbetstid totalt`;
+
+      const breakdownEl = document.getElementById('tf-breakdown');
+      breakdownEl.innerHTML = '';
+
+      if (hrsWithin > 0) {
+        const item = document.createElement('div');
+        item.className = 'breakdown-item';
+        item.innerHTML = `
+          <div class="breakdown-info">
+            <span class="breakdown-name" style="color: var(--accent-blue);">Inom tidförskjutningsperioden</span>
+            <span class="breakdown-details">${formatHours(hrsWithin)} h × ${formatSEK(rateWithin)} kr/h</span>
+          </div>
+          <div class="breakdown-sum">+ ${formatSEK(payWithin)} kr</div>
+        `;
+        breakdownEl.appendChild(item);
+      }
+
+      if (hrsOutside > 0) {
+        const item = document.createElement('div');
+        item.className = 'breakdown-item';
+        item.innerHTML = `
+          <div class="breakdown-info">
+            <span class="breakdown-name" style="color: #ff9500;">Utanför tidförskjutningsperioden</span>
+            <span class="breakdown-details">${formatHours(hrsOutside)} h × ${formatSEK(rateOutside)} kr/h (Månadslön / 165)</span>
+          </div>
+          <div class="breakdown-sum">+ ${formatSEK(payOutside)} kr</div>
+        `;
+        breakdownEl.appendChild(item);
+      }
+
+      // Dölj inmatningskortet
+      document.getElementById('tf-input-card').style.display = 'none';
+
+      // Visa kortet och utlös pengaregn!
+      document.getElementById('tf-result').style.display = 'block';
+      
+      if (totalPay > 0) {
         triggerCashRain();
       }
     }
